@@ -282,7 +282,7 @@ internal class SCardReaderListSecure : SClass {
         os_log("SCardReaderListSecure:aesCbcEncrypt()", log: OSLog.libLog, type: .info)
         let iv = (IV == nil) ? [UInt8](repeating: 0x00, count: 16) : IV
         do {
-            let result = try AES(key: key, blockMode: CBC(iv: iv!), padding: .zeroPadding).encrypt(buffer)
+            let result = try AES(key: key, blockMode: CBC(iv: iv!), padding: .noPadding).encrypt(buffer)
             return result
         } catch {
             setInternalError(code: .secureCommunicationError, message: error.localizedDescription)
@@ -294,7 +294,7 @@ internal class SCardReaderListSecure : SClass {
         os_log("SCardReaderListSecure:aesCbcDecrypt()", log: OSLog.libLog, type: .info)
         let iv = (IV == nil) ? [UInt8](repeating: 0x00, count: 16) : IV
         do {
-            let result = try AES(key: key, blockMode: CBC(iv: iv!), padding: .zeroPadding).decrypt(buffer)
+            let result = try AES(key: key, blockMode: CBC(iv: iv!), padding: .noPadding).decrypt(buffer)
             return result
         } catch {
             setInternalError(code: .secureCommunicationError, message: error.localizedDescription)
@@ -306,8 +306,8 @@ internal class SCardReaderListSecure : SClass {
         os_log("SCardReaderListSecure:aesEcbEncrypt()", log: OSLog.libLog, type: .info)
         let iv = [UInt8](repeating: 0x00, count: 16)
         do {
-            let result = try AES(key: key, blockMode: CBC(iv: iv), padding: .zeroPadding).encrypt(buffer)
-            return Array(result.prefix(16))
+            let result = try AES(key: key, blockMode: CBC(iv: iv), padding: .noPadding).encrypt(buffer)
+            return Array(result.prefix(16)) // HTH
         } catch {
             setInternalError(code: .secureCommunicationError, message: error.localizedDescription)
             return nil
@@ -318,7 +318,7 @@ internal class SCardReaderListSecure : SClass {
         os_log("SCardReaderListSecure:aesEcbDecrypt()", log: OSLog.libLog, type: .info)
         let iv = [UInt8](repeating: 0x00, count: 16)
         do {
-            let result = try AES(key: key, blockMode: CBC(iv: iv), padding: .zeroPadding).decrypt(buffer)
+            let result = try AES(key: key, blockMode: CBC(iv: iv), padding: .noPadding).decrypt(buffer)
             return result
         } catch {
             setInternalError(code: .secureCommunicationError, message: error.localizedDescription)

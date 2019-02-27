@@ -127,7 +127,7 @@ public class SCardReader: Equatable {
 	*/
 	public func cardConnect() {
 		os_log("SCardReader:cardConnect()", log: OSLog.libLog, type: .info)
-		os_log("Channel: %@", log: OSLog.libLog, type: .debug, self._slotName)
+		os_log("Channel: %s", log: OSLog.libLog, type: .debug, self._slotName)
 		parent?.cardConnect(reader: self)
 	}
 	
