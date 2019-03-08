@@ -48,13 +48,13 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
     // ******************************************************
     
     // "Meta" properties ************************************
-    public static let libraryName = "PC/SC-Like over BLE Library"
+    public static let libraryName = "PC/SC-Like BLE Library"
     public static let LibrarySpecial = ""
-    public static let libraryDebug = 1
-    public static let libraryVersion = "MM.mm-bb-gXXXXX"
-    public static let libraryVersionMajor = "MM"
-    public static let libraryVersionMinor = "mm"
-    public static let LibraryVersionBuild = "bb"
+    public static let libraryDebug = true
+    public static let libraryVersion = (Bundle.main.infoDictionary!["CFBundleShortVersionString"] as? String) ?? ""
+    public static let libraryVersionMajor = libraryVersion.components(separatedBy: ".")[0]
+    public static let libraryVersionMinor = libraryVersion.components(separatedBy: ".")[1]
+    public static let LibraryVersionBuild = libraryVersion.components(separatedBy: ".")[2]
     // *****************************************************
     
     // Var used by public properties or methods **********
@@ -222,11 +222,12 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
             return
         }
         if self.commonCharacteristicIndex >= self.commoncharacteristicsList.count {
+            notifyToCharacteristics()
             self.getSlotsCount()
             return
         }
         self.machineState = .isReadingCommonCharacteristicsValues
-        os_log("Asking for reading chacacteristic ID:  %@", log: OSLog.libLog, type: .debug, self.commoncharacteristicsList[self.commonCharacteristicIndex].uuid.uuidString)
+        os_log("Asking for reading chacacteristic ID:  %s", log: OSLog.libLog, type: .debug, self.commoncharacteristicsList[self.commonCharacteristicIndex].uuid.uuidString)
         self.readCharacteristicValue(characteristic: self.commoncharacteristicsList[self.commonCharacteristicIndex])
     }
     
@@ -235,16 +236,15 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         self.commonCharacteristicIndex = 0
         for characteristic in self.characteristicsSpecificsToDevice {
             if characteristic.properties.contains(.notify) || characteristic.properties.contains(.indicate)  {
-                os_log("We are subsribing to characteristic: %@", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
+                os_log("We are subsribing to characteristic: %s", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
                 self.device.setNotifyValue(true, for: characteristic)
             }
         }
-        readCommonCharacteristics()
     }
     
     // Ask for the reading of a characteristic value
     private func readCharacteristicValue(characteristic: CBCharacteristic) {
-        os_log("SCardReaderList:readCharacteristicValue(): %@", log: OSLog.libLog, type: .info, characteristic.uuid.uuidString)
+        os_log("SCardReaderList:readCharacteristicValue(): %s", log: OSLog.libLog, type: .info, characteristic.uuid.uuidString)
         self.device.readValue(for: characteristic)
     }
     
@@ -269,7 +269,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         case "2A50":
             self.pnpId = SCUtilities.bytesToHex(characteristic)
         default:
-            os_log("unused common characteristic: %@", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
+            os_log("unused common characteristic: %s", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
         }
     }
     
@@ -301,7 +301,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         }
         
         self.slotCount = temporaryCcidStatus.numberOfSlots
-        os_log("Slots count: %@", log: OSLog.libLog, type: .info, String(self.slotCount))
+        os_log("Slots count: %d", log: OSLog.libLog, type: .info, self.slotCount)
         if self.slotCount == 0 {
             _ = self.generateError(code: SCardErrorCode.dummyDevice, message: "Slot count is equal to 0", trigger: true)
             return
@@ -324,7 +324,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
     
     private func connectToSlot(_ slotIndex: Int) {
         os_log("SCardReaderList:connectToSlot()", log: OSLog.libLog, type: .info)
-        os_log("Slot Index: %@", log: OSLog.libLog, type: .debug, String(slotIndex))
+        os_log("Slot Index: %d", log: OSLog.libLog, type: .debug, slotIndex)
         self.lastCommand = .cardConnect
         self.CCID_PC_To_RDR(command: SCard_CCID_PC_To_RDR.PC_To_RDR_IccPowerOn, slotNumber: slotIndex, payload: nil)
     }
@@ -355,7 +355,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
             return
         }
         if self.readers[isUsingSlotNumber].cardPresent && !self.readers[isUsingSlotNumber].cardPowered {
-            os_log("Calling SCardConnect() on slot %@", log: OSLog.libLog, type: .debug, String(isUsingSlotNumber))
+            os_log("Calling SCardConnect() on slot %d", log: OSLog.libLog, type: .debug, isUsingSlotNumber)
             connectToSlot(isUsingSlotNumber)
         } else {
             isUsingSlotNumber += 1
@@ -369,7 +369,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         for slotIndex in 0 ..< self.slotCount {
             os_log("Slot index:  %i", log: OSLog.libLog, type: .debug, readers[slotIndex]._slotIndex)
             os_log("Card Present: %s", log: OSLog.libLog, type: .debug, String(readers[slotIndex].cardPresent))
-            os_log("Card Powered: %@", log: OSLog.libLog, type: .debug, String(readers[slotIndex].cardPowered))
+            os_log("Card Powered: %s", log: OSLog.libLog, type: .debug, String(readers[slotIndex].cardPowered))
             os_log("Slot name: %s", log: OSLog.libLog, type: .debug, readers[slotIndex]._slotName)
         }
     }
@@ -490,7 +490,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
             } else if machineState == .discoveredDeviceWithSuccess {
                 refreshSlotsFromCcidStatus(characteristic: characteristic)
             } else {
-                os_log("This case shall not happen, machineState: %@", log: OSLog.libLog, type: .error, String(self.machineState.rawValue))
+                os_log("This case shall not happen, machineState: %s", log: OSLog.libLog, type: .error, String(self.machineState.rawValue))
                 _ = self.generateError(code: .otherError, message: "This case shall not happen, machineState: " + String(self.machineState.rawValue), trigger: true)
                 return
             }
@@ -634,7 +634,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
     }
     
     private func callOnCardDidDisconnect(_ characteristic: CBCharacteristic) {
-        os_log("SCardReaderList:callOnCardDidDisconnect()", log: OSLog.libLog, type: .info)
+        os_log("SCardReaderList:callOnCardDidDisconnect(characteristic:)", log: OSLog.libLog, type: .info)
         noop()
         let response = SCCcidRdrToPc(characteristic: characteristic, readerListSecure: (self.machineState == .discoveredDeviceWithSuccess || self.machineState == .poweringSlots) ? self.readerListSecure : nil)
         if !response.isValid() {
@@ -652,6 +652,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
             let reader = self.readers[isUsingSlotNumber]
             let channel = reader.channel
             channel?.reinitAtr()
+            reader.setCardUnpowered()
             self.delegate?.onCardDidDisconnect(channel: channel, error: nil)
         } else if response.header.responseCode == .RDR_To_PC_SlotStatus { // fail
             callOnCardDidDisconnectWithError(generateError(code: .cardAbsent, message: "SCardDisconnect() was called but the answer is not RDR_To_PC_SlotStatus", trigger: false))
@@ -844,7 +845,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         self.machineState = .isUnSubsribingToNotifications
         for characteristic in self.characteristicsSpecificsToDevice {
             if characteristic.properties.contains(.notify) || characteristic.properties.contains(.indicate)  {
-                os_log("Unsubscribe to characteristic %@", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
+                os_log("Unsubscribe to characteristic %s", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
                 self.device!.setNotifyValue(false, for: characteristic)
             }
         }
@@ -879,7 +880,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
     }
     
     private func callOnCardDidDisconnect(_ slotIndex: Int) {
-        os_log("SCardReaderList:callOnCardDidDisconnect()", log: OSLog.libLog, type: .info)
+        os_log("SCardReaderList:callOnCardDidDisconnect(slotIndex:)", log: OSLog.libLog, type: .info)
         if machineState != .discoveredDeviceWithSuccess {
             return
         }
@@ -903,11 +904,11 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
             os_log("There's no bytes sent", log: OSLog.libLog, type: .debug)
         }
         self.delegate?.onData(characteristicId: characteristic.uuid.uuidString, direction: "<", data: bytes)
-        os_log("Bytes sent: %@", log: OSLog.libLog, type: .debug, bytes.hexa)
+        os_log("Bytes sent: %s", log: OSLog.libLog, type: .debug, bytes.hexa)
     }
     
     private func logDataReceivedFromCharacteristic(_ characteristic: CBCharacteristic) {
-        os_log("SCardReaderList:logDataReceivedFromCharacteristic() from characteristic: %@", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
+        os_log("SCardReaderList:logDataReceivedFromCharacteristic() from characteristic: %s", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
         guard let characteristicData = characteristic.value else {
             self.delegate?.onData(characteristicId: characteristic.uuid.uuidString, direction: ">", data: nil)
             os_log("characteristic value is nil", log: OSLog.libLog, type: .debug)
@@ -920,7 +921,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
             return
         }
         self.delegate?.onData(characteristicId: characteristic.uuid.uuidString, direction: ">", data: bytes)
-        os_log("Bytes received: %@", log: OSLog.libLog, type: .debug, bytes.hexa)
+        os_log("Bytes received: %s", log: OSLog.libLog, type: .debug, bytes.hexa)
     }
     
     private func CCID_PC_To_RDR(command: SCard_CCID_PC_To_RDR, slotNumber: Int, payload: [UInt8]?) {
@@ -1056,13 +1057,13 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         os_log("SCardReaderList:didDiscoverServices()", log: OSLog.libLog, type: .info)
         if error != nil {
-            _ = self.generateError(code: error!._code, message: error.debugDescription, trigger: true)
+            _ = self.generateError(code: error!._code, message: error!.localizedDescription, trigger: true)
         } else {
             self.deviceServices = peripheral.services!
             self.servicesCount = (peripheral.services?.count)!
             self.currentServiceIndex = 0
             for service in peripheral.services! {
-                os_log("Service ID: %@, isPrimary: %@", log: OSLog.libLog, type: .debug, service.uuid.uuidString, service.isPrimary.description)
+                os_log("Service ID: %s, isPrimary: %s", log: OSLog.libLog, type: .debug, service.uuid.uuidString, service.isPrimary.description)
                 os_log("Launching characteristics scan", log: OSLog.libLog, type: .debug)
                 peripheral.discoverCharacteristics(nil, for: service)
             }
@@ -1073,16 +1074,16 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
     /// :nodoc:
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         os_log("SCardReaderList:didDiscoverCharacteristicsFor()", log: OSLog.libLog, type: .info)
-        os_log("Characteristics discovered for service %@", log: OSLog.libLog, type: .debug, service.uuid.uuidString)
+        os_log("Characteristics discovered for service %s", log: OSLog.libLog, type: .debug, service.uuid.uuidString)
         
         if error != nil {
-            _ = self.generateError(code: error!._code, message: error.debugDescription, trigger: true)
+            _ = self.generateError(code: error!._code, message: error!.localizedDescription, trigger: true)
         } else {
             if CommonServices.isCommonService(service.uuid) {
                 os_log("We are on a common service", log: OSLog.libLog, type: .debug)
                 for characteristic in service.characteristics! {
                     if CommonServices.isCommonCharacteristic(commonServices: self.commonServices, characteristicId: characteristic.uuid) {
-                        os_log("Characteristic ID:  %@", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
+                        os_log("Characteristic ID:  %s", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
                         self.commoncharacteristicsList.append(characteristic)
                     }
                 }
@@ -1090,13 +1091,14 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
                 os_log("We are NOT on a common service", log: OSLog.libLog, type: .debug)
                 for characteristic in service.characteristics! {
                     setCCIDCharacteristics(characteristic)
-                    os_log("Characteristic ID:  %@", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
+                    os_log("Characteristic ID:  %s", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
                     self.characteristicsSpecificsToDevice.append(characteristic)
                 }
             }
             self.currentServiceIndex += 1
             if self.currentServiceIndex >= self.servicesCount {
-                self.notifyToCharacteristics()
+                //self.notifyToCharacteristics()
+                self.readCommonCharacteristics()
             }
         }
     }
@@ -1135,9 +1137,9 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
     /// :nodoc:
     public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         os_log("SCardReaderList:didWriteValueFor()", log: OSLog.libLog, type: .info)
-        os_log("Characteristic ID: %@", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
+        os_log("Characteristic ID: %s", log: OSLog.libLog, type: .debug, characteristic.uuid.uuidString)
         if error != nil {
-            let _error = generateError(code: error!._code, message: error.debugDescription)
+            let _error = generateError(code: error!._code, message: error!.localizedDescription)
             switch lastCommand {
             case .control:
                 callOnControlDidResponseWithError(_error)
@@ -1169,7 +1171,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         isValid = false
         var _error: Error?
         if error != nil {
-            _error = self.generateError(code: error!._code, message: error.debugDescription, trigger: false)
+            _error = self.generateError(code: error!._code, message: error!.localizedDescription, trigger: false)
         }
 
         if machineState != .isDisconnecting && machineState != .isUnSubsribingToNotifications {
@@ -1252,7 +1254,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         if detectedDeviceType == .Unknown {
             let errorMessage = "Unknow device type"
             let errorCode = Int(SCardErrorCode.unsupportedPrimaryService.rawValue)
-            os_log("Error code: %@, Message: %@", log: OSLog.libLog, type: .error, String(errorCode), errorMessage)
+            os_log("Error code: %d, Message: %s", log: OSLog.libLog, type: .error, errorCode, errorMessage)
             let error = NSError(domain: Bundle.main.bundleIdentifier!, code: errorCode, userInfo: [NSLocalizedDescriptionKey : errorMessage])
             delegate.onReaderListDidCreate(readers: nil, error: error)
             return
@@ -1313,7 +1315,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
      */
     public func getReader(slot: String) -> SCardReader? {
         os_log("SCardReaderList:getReader()", log: OSLog.libLog, type: .info)
-        os_log("slot: %@", log: OSLog.libLog, type: .debug, slot)
+        os_log("slot: %s", log: OSLog.libLog, type: .debug, slot)
         if machineState != .discoveredDeviceWithSuccess {
             return nil
         }
@@ -1337,7 +1339,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
      */
     public func getReader(slot: Int) -> SCardReader? {
         os_log("SCardReaderList:getReader()", log: OSLog.libLog, type: .info)
-        os_log("slot: %@", log: OSLog.libLog, type: .debug, String(slot))
+        os_log("slot: %d", log: OSLog.libLog, type: .debug, slot)
         if machineState != .discoveredDeviceWithSuccess {
             setLastError(code: SCardErrorCode.noSuchSlot.rawValue, message: "Invalid slot index")
             return nil
@@ -1409,7 +1411,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         let slotIndex = reader._slotIndex
         let cardPresent = reader.cardPresent
         
-        os_log("Slot index: %@, cardPresent: %@", log: OSLog.libLog, type: .debug, String(slotIndex), String(cardPresent))
+        os_log("Slot index: %d, cardPresent: %s", log: OSLog.libLog, type: .debug, slotIndex, String(cardPresent))
         
         if self.lastCommand == .cardConnect {
             os_log("NOTHING WAS DONE WE ARE ALREADY CONNECTING TO THE CARD", log: OSLog.libLog, type: .debug)

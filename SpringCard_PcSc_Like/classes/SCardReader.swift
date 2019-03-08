@@ -140,4 +140,9 @@ public class SCardReader: Equatable {
 		os_log("SCardReader:setCardPowered()", log: OSLog.libLog, type: .info)
 		self._cardPowered = true
 	}
+    
+    internal func setCardUnpowered() {
+        os_log("SCardReader:setCardUnpowered()", log: OSLog.libLog, type: .info)
+        self._cardPowered = false
+    }
 }

@@ -68,5 +68,6 @@ public protocol SCardReaderListDelegate {
 	///   - error: In case of problem this parameter is not nil and contains an error code and message
 	func onCardDidDisconnect(channel: SCardChannel?, error: Error?)
     
+    // TODO, remove
     func onData(characteristicId: String, direction: String, data: [UInt8]?)
 }
