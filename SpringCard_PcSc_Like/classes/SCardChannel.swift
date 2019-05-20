@@ -20,6 +20,7 @@ public class SCardChannel: Equatable {
 
 	internal var _atr = [UInt8]()
 	internal var _parent: SCardReader!
+    private var _isUnpowered = false
 	
 	/**
 	Points to an `SCardReader` object
@@ -29,6 +30,11 @@ public class SCardChannel: Equatable {
 	public var parent: SCardReader {
 		return self._parent
 	}
+    
+    /// Was the channel unpowered after the reader went to sleep?
+    public var isUnpowered: Bool {
+        return self._isUnpowered
+    }
 	
 	/**
 	Card's ATR
@@ -73,12 +79,18 @@ public class SCardChannel: Equatable {
 	*/
 	public func cardDisconnect() {
 		os_log("SCardChannel:cardDisconnect()", log: OSLog.libLog, type: .info)
+        // reinitAtr() is called by parent.parent in case of success
 		_parent._parent.cardDisconnect(channel: self)
 	}
 	
 	internal func reinitAtr() {
 		self._atr = [UInt8]()
 	}
+    
+    internal func setUnpowered() {
+        self.reinitAtr()
+        self._isUnpowered = true
+    }
 	
 	/**
 	Connect to the card again (re-open an existing communication channel

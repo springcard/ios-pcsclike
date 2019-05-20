@@ -106,7 +106,7 @@ internal class SCUtilities {
 			bytes[3] &= ~(1 << cipherBitPosition)
 		}
 		bytes = bytes.reversed()
-		let data = Data(bytes: bytes)
+		let data = Data(bytes)
 		let value = UInt32(bigEndian: data.withUnsafeBytes { $0.pointee })
 		return value
 	}

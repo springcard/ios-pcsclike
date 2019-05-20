@@ -81,7 +81,7 @@ internal class SCardReaderListSecure : SClass {
     internal func decryptCcidBuffer(_ ccidBuffer: [UInt8], payloadLength: inout UInt32) -> [UInt8]? {
         os_log("SCardReaderListSecure:decryptCcidBuffer()", log: OSLog.libLog, type: .info)
         
-        if ccidBuffer.isEmpty {
+        if ccidBuffer.isEmpty || ccidBuffer.count < 18 {
             setInternalError(code: .secureCommunicationError, message: "Invalid ccid_buffer size")
             return nil
         }
@@ -307,7 +307,7 @@ internal class SCardReaderListSecure : SClass {
         let iv = [UInt8](repeating: 0x00, count: 16)
         do {
             let result = try AES(key: key, blockMode: CBC(iv: iv), padding: .noPadding).encrypt(buffer)
-            return Array(result.prefix(16)) // HTH
+            return Array(result.prefix(16))
         } catch {
             setInternalError(code: .secureCommunicationError, message: error.localizedDescription)
             return nil

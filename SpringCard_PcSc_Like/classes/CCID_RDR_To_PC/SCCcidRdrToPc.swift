@@ -86,7 +86,7 @@ internal class SCCcidRdrToPc: SClass {
                 return nil
             }
             self.header.setLength(payloadLength)
-            _payload = Array(newCcidBuffer.suffix(from: 9))
+            _payload = Array(newCcidBuffer.suffix(from: 10))
         } else {
             guard let __payload = self.payload?.getPayload() else {
                 self.setInternalError(code: .otherError, message: "Payload is nil")

@@ -52,7 +52,7 @@ internal class DevicesServices {
 	
 	internal static func getPuckUnbondedServices() -> [String: (serviceDescription: String, isAdvertisingService: Bool, serviceCharacteristics: [String: String])] {
 		return  [
-			"F91C914F-367C-4108-AC3E-3D30CFDD0A1A":
+			"F91C914F-367C-4108-AC3E-3D30CFDD0A1A":	// Service lu
 				(
 					serviceDescription: "Main service",
 					isAdvertisingService: true,
@@ -78,7 +78,7 @@ internal class DevicesServices {
 	
 	internal static func getCharacteristicIdFromName(services: [BleService], searchedCharacteristicName: String) -> CBUUID {
 		for service in services {
-			for (descrition, uuid) in service.getCharacetristics() {
+			for (descrition, uuid) in service.getCharacteristics() {
 				if descrition.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == searchedCharacteristicName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) {
 					return uuid
 				}

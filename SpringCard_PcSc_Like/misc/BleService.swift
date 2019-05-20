@@ -46,18 +46,18 @@ internal class BleService: CustomStringConvertible
 		return self.serviceId!
 	}
 	
-	internal func getCharacetristics() -> [String:CBUUID] {
+	internal func getCharacteristics() -> [String:CBUUID] {
 		return self.characterisitics
 	}
-
-	internal func getCharacteristics() -> [CBUUID] {
+    
+	internal func getCharacteristicsUuids() -> [CBUUID] {
 		var characs:[CBUUID] = []
 		for (_, ID) in self.characterisitics {
 			characs.append(ID)
 		}
 		return characs
 	}
-	
+
 	internal func getServiceIdAsString() -> String {
 		if self.serviceId != nil {
 			return self.serviceId!.uuidString

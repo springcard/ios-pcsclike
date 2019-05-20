@@ -44,7 +44,14 @@ public protocol SCardReaderListDelegate {
 	///		- present: Is the card present?
 	///		- powered: Is the card powered?
 	/// 	- error: In case of problem this parameter is not nil and contains an error code and message
-	func onReaderStatus(reader: SCardReader?, present: Bool?, powered: Bool?, error: Error?)
+    func onReaderStatus(reader: SCardReader?, present: Bool?, powered: Bool?, error: Error?)
+    
+    /// Invoked when the device is going to sleep or waking up
+    ///
+    /// - Parameters:
+    ///		- readers: Object of type `SCardReaderList`
+    ///		- isInLowPowerMode: true if the product is going to low power mode, false if it is waking-up
+    func onReaderListState(readers: SCardReaderList, isInLowPowerMode: Bool);
 	
 	/// When a R-APDU is received after a call to `SCardChannel.transmit()`
 	///
@@ -76,4 +83,11 @@ public protocol SCardReaderListDelegate {
     ///   - data: byte array representing data sent or received
     /// - Remark: This callback is temporary
     func onData(characteristicId: String, direction: String, data: [UInt8]?)
+    
+    /// Read device’s power state & battery level
+    ///
+    /// - Parameters:
+    ///   - powerState: See https://docs.springcard.com/books/SpringCore/Host_interfaces/BLE/Standard_Services#page_Device-s-power-capabilities-and-states
+    ///   - batteryLevel: 0-100%
+    func onPowerInfo(powerState: Int?, batteryLevel: Int?, error: Error?)
 }

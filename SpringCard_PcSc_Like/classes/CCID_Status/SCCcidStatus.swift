@@ -15,6 +15,7 @@ internal class SCCcidStatus: SClass {
 	internal var responseReady: Bool = false
 	internal var numberOfSlots = 0
 	internal var slots: [SCCcidStatusSlotStatusNotification] = []
+    internal var isInLowPowerMode = false
 	// **************************************************************
 	
 	internal var isValid = true
@@ -55,6 +56,7 @@ internal class SCCcidStatus: SClass {
 		//os_log("SCCcidStatus:toObject()", log: OSLog.libLog, type: .info)
 		self.responseReady = (self.rawContent[0] >> 8 == 1) ? true : false
 		self.numberOfSlots = Int(self.rawContent[0] & 0b111)
+        self.isInLowPowerMode = Int(self.rawContent[0] & 0b10000000) == 0x80 ? true : false;
 		self.slots = []
 		
 		for slotIndex in 0 ..< self.numberOfSlots {

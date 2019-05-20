@@ -25,6 +25,10 @@ internal enum CCID_RDR_To_PC_Answer_Codes: UInt8 {
 internal let getSlotsNameApdu: [UInt8] = [0x58, 0x21, 0x00]
 
 /// :nodoc:
+internal let shutdownCommand: [UInt8] = [0x58, 0xAF, 0xDE, 0xAD]
+
+
+/// :nodoc:
 internal let BUSY = "Library si busy"
 
 /// :nodoc:
@@ -52,7 +56,8 @@ internal enum LastCommand: Int {
 	cardConnect,
 	control,
 	transmit,
-	cardDisconnect
+    cardDisconnect,
+    readingBatteryLevel
 }
 
 /// :nodoc:

@@ -53,7 +53,9 @@ internal class SCCcidRdRToPcHeader: SClass {
 			setInternalError(code: .invalidCharacteristicSetting, message: "CCID RDR_To_Pc characteristic bytes are empty")
 			return
 		}
-		self.rawContent = Array(bytes[..<headerLength])
+        if (bytes.count >= headerLength) {
+        	self.rawContent = Array(bytes[..<headerLength])
+        }
 		validateContent()
 	}
 	
@@ -88,6 +90,7 @@ internal class SCCcidRdRToPcHeader: SClass {
 		self.responseCode = self.getResponseCode()
 		let payloadLengthBytes: [Byte] = [rawContent[1], rawContent[2], rawContent[3], rawContent[4]]
 		payloadLength = SCUtilities.fromByteArray(byteArray: payloadLengthBytes, secureCommunication: self.isSecureCommunication)
+        
 		slotNumber = self.rawContent[CcidResponsePositions.slotNumber]
 		sequenceNumber = self.rawContent[CcidResponsePositions.sequenceNumber]
 		slotStatus = self.rawContent[CcidResponsePositions.slotStatus]

@@ -25,6 +25,7 @@ public class SCardReader: Equatable {
 	internal var _slotName: String = ""
 	internal var _cardPowered: Bool = false
 	internal var _cardPresent: Bool = false
+    //internal var _needToBePowered: Bool = false // TODO, utile ?
     
     /**
      Contains the slot's index
@@ -76,7 +77,6 @@ public class SCardReader: Equatable {
 	}
 	
 	internal init(parent: SCardReaderList, slotName: String, slotIndex: Int) {
-		//os_log("SCardReader:init()", log: OSLog.libLog, type: .info)
 		self._parent = parent
 		self._slotIndex = slotIndex
 		self._slotName = slotName
@@ -84,7 +84,6 @@ public class SCardReader: Equatable {
 	
 	/// :nodoc:
 	public static func == (lhs: SCardReader, rhs: SCardReader) -> Bool {
-		//os_log("SCardReader:==", log: OSLog.libLog, type: .info)
 		return lhs._slotIndex == rhs._slotIndex
 	}
 	
@@ -93,18 +92,22 @@ public class SCardReader: Equatable {
         os_log("Slot Index: %@, new state: %@", log: OSLog.libLog, type: .debug, String(self._slotIndex), String(state.slotStatus.rawValue))
 		switch state.slotStatus {
 			case .cardAbsent: // Card absent, no change since the last notification
+                os_log("Card absent, no change since the last notification", log: OSLog.libLog, type: .debug)
 				self._cardPresent = false
 				self._cardPowered = false
 			
 			case .cardPresent:	// Card present, no change since last notification
+                os_log("Card present, no change since last notification", log: OSLog.libLog, type: .debug)
 				self._cardPresent = true
 
 			case .cardRemoved:	// Card removed notification
+                os_log("Card removed notification", log: OSLog.libLog, type: .debug)
 				self._cardPresent = false
 				self._cardPowered = false
-				self._channel = nil
+				//self._channel = nil // TODO supprimer ?
 
 			case .cardInserted:	// Card inserted notification
+                os_log("Card inserted notification", log: OSLog.libLog, type: .debug)
 				self._cardPresent = true
 		}
 	}
@@ -135,6 +138,13 @@ public class SCardReader: Equatable {
 		os_log("SCardReader:setNewChannel()", log: OSLog.libLog, type: .info)
 		self._channel = channel
 	}
+    
+    internal func unpower() {
+        os_log("SCardReader:unpower()", log: OSLog.libLog, type: .info)
+        if self._channel != nil {
+            self._channel?.setUnpowered()
+        }
+    }
 	
 	internal func setCardPowered() {
 		os_log("SCardReader:setCardPowered()", log: OSLog.libLog, type: .info)

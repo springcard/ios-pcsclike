@@ -69,7 +69,8 @@ internal class CommonServices
 				serviceDescription: "org.bluetooth.service.battery",
 				isAdvertisingService: false,
 				serviceCharacteristics: [
-					"org.bluetooth.characteristic.battery_level"      : "2A19"
+					"org.bluetooth.characteristic.battery_level"      	: "2A19",
+                    "org.bluetooth.characteristic.battery_power_state"	: "2A1A"
 				]))
 		return commonServices
 	}
@@ -86,7 +87,7 @@ internal class CommonServices
 	
 	internal static func isCommonCharacteristic(commonServices: [BleService], characteristicId: CBUUID) -> Bool {
 		for service in commonServices {
-			for characteristic in service.getCharacteristics() {
+			for characteristic in service.getCharacteristicsUuids() {
 				if characteristic == characteristicId {
 					return true
 				}
@@ -94,4 +95,14 @@ internal class CommonServices
 		}
 		return false
 	}
+    
+    internal static func getServiceCharacteristicsUuids(serviceUuid: CBUUID) -> [CBUUID] {
+        let services = CommonServices.getCommonServices()
+        for service in services {
+            if service.getServiceId() == serviceUuid {
+                return service.getCharacteristicsUuids()
+            }
+        }
+        return []
+    }
 }

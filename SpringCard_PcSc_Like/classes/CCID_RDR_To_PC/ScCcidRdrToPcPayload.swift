@@ -53,7 +53,7 @@ internal class ScCcidRdrToPcPayload: SClass {
 		if lastIndex > bytes.count {
 			lastIndex = bytes.count
 			islongAnswer = true
-		}
+        }
 		self.payload = Array(bytes[startIndex ..< lastIndex])
 		self.payloadLength = UInt32(payload.count)
 		self.isValid = true
