@@ -14,14 +14,16 @@ internal class SCCcidRdrToPc: SClass {
 
 	private var _isValid = false
 	internal var _isLongAnswer = false
+	private var isLongAnswerFromCaller = false
     internal var awaitedPayloadLength: UInt32 = 0
     
     private var readerListSecure: SCardReaderListSecure?
     internal var isSecureCommunication = false
     
-    init(characteristic: CBCharacteristic, readerListSecure: SCardReaderListSecure?) {
-        self.header = SCCcidRdRToPcHeader(characteristic: characteristic, readerListSecure: readerListSecure)
+    init(characteristic: CBCharacteristic, readerListSecure: SCardReaderListSecure?, isLongAnswer: Bool = false) {
+        self.header = SCCcidRdRToPcHeader(characteristic: characteristic, readerListSecure: readerListSecure, isLongAnswer: isLongAnswer)
         self.readerListSecure = readerListSecure
+        self.isLongAnswerFromCaller = isLongAnswer
         super.init()
         
         if readerListSecure != nil && (readerListSecure?.isSecureCommunication)! {
@@ -29,9 +31,11 @@ internal class SCCcidRdrToPc: SClass {
         }
 
 		if !header.isValid {
-			self.payload = nil
-            setInternalError(code: header.errorCode, message: header.errorMessage)
-			return
+            if !self.isLongAnswerFromCaller {
+                self.payload = nil
+                setInternalError(code: header.errorCode, message: header.errorMessage)
+                return
+            }
 		}
         
 		guard let payloadLength = self.header.payloadLength else {
@@ -42,7 +46,7 @@ internal class SCCcidRdrToPc: SClass {
 		self.awaitedPayloadLength = payloadLength
         self.payload = ScCcidRdrToPcPayload(characteristic: characteristic, startingIndex: header.payloadStartIndex, payloadLength: header.payloadLength!, readerListSecure: readerListSecure)
 		
-		if !payload!.isValid {
+		if !payload!.isValid && !self.isLongAnswerFromCaller {
             setInternalError(code: payload!.errorCode, message: payload!.errorMessage)
 			return
 		}

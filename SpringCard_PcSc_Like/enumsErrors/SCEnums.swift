@@ -104,9 +104,9 @@ internal enum SlotStatusNotification: Byte {
 
 /// Key Index
 public enum KeyIndex: UInt8 {
-    case none = 0x00
-    case user = 0x01
-    case admin = 0x02
+    case user = 0x00
+    case admin = 0x01
+    case none = 0x02
 }
 
 /// Communication mode

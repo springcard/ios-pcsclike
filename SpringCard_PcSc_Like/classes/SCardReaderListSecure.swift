@@ -27,12 +27,14 @@ internal class SCardReaderListSecure : SClass {
     private let versionMode: UInt8 = 0x01
     private let expectedLength = 17
     
-    // *************************************************
-    // * Pubic methods (methods accessible to the lib) *
-    // *************************************************
+    // *****************************************
+    // * Pubic methods (accessible to the lib) *
+    // *****************************************
 
     init(secureConnectionParameters: SecureConnectionParameters) {
+        #if DEBUG
         os_log("SCardReaderListSecure:init()", log: OSLog.libLog, type: .info)
+        #endif
         self.secureConnectionParameters = secureConnectionParameters
         self.debugSecureCommunication = secureConnectionParameters.debugSecureCommunication
             if secureConnectionParameters.commMode != .plain {
@@ -42,8 +44,9 @@ internal class SCardReaderListSecure : SClass {
 
     // to be called to initiate secure communication according to parameters
     internal func getAuthenticationCommand() -> [UInt8]? {
+        #if DEBUG
         os_log("SCardReaderListSecure:getAuthenticationCommand()", log: OSLog.libLog, type: .info)
-        
+        #endif
         switch self.secureConnectionParameters.authMode {
         case .none:
             return [UInt8]()
@@ -55,8 +58,9 @@ internal class SCardReaderListSecure : SClass {
     
     // To be called after sending the authenticate command
     internal func getAesAuthenticationResponseForStep1(responsePayload: [UInt8]) -> [UInt8]? {
+        #if DEBUG
         os_log("SCardReaderListSecure:getAesAuthenticationResponseForStep1()", log: OSLog.libLog, type: .info)
-        
+        #endif
         switch self.secureConnectionParameters.authMode {
         case .none:
             return [UInt8]()
@@ -67,8 +71,9 @@ internal class SCardReaderListSecure : SClass {
     }
 
     internal func getAesAuthenticationResponseForStep2(responsePayload: [UInt8]) -> Bool {
+        #if DEBUG
         os_log("SCardReaderListSecure:getAesAuthenticationResponseForStep2()", log: OSLog.libLog, type: .info)
-        
+        #endif
         switch self.secureConnectionParameters.authMode {
         case .none:
             return true
@@ -79,8 +84,9 @@ internal class SCardReaderListSecure : SClass {
     }
 
     internal func decryptCcidBuffer(_ ccidBuffer: [UInt8], payloadLength: inout UInt32) -> [UInt8]? {
+        #if DEBUG
         os_log("SCardReaderListSecure:decryptCcidBuffer()", log: OSLog.libLog, type: .info)
-        
+        #endif
         if ccidBuffer.isEmpty || ccidBuffer.count < 18 {
             setInternalError(code: .secureCommunicationError, message: "Invalid ccid_buffer size")
             return nil
@@ -149,7 +155,9 @@ internal class SCardReaderListSecure : SClass {
     
     // ccidBuffer must contains the header
     internal func encryptCcidBuffer(_ ccidBuffer:[UInt8], payloadLength: inout UInt32) -> [UInt8]? {
+        #if DEBUG
         os_log("SCardReaderListSecure:encryptCcidBuffer()", log: OSLog.libLog, type: .info)
+        #endif
         var ccid_buffer = ccidBuffer
         
         /* Compute the CMAC of the plain buffer */
@@ -197,7 +205,6 @@ internal class SCardReaderListSecure : SClass {
         sessionSendIV = cmac
         return ccid_buffer
     }
-
     
     
     // *******************
@@ -205,7 +212,9 @@ internal class SCardReaderListSecure : SClass {
     // *******************
     
     private func PC_to_RDR_SetLength(_ buffer: inout [UInt8], _ dataLength: UInt32, _ secure: Bool) {
+        #if DEBUG
         os_log("SCardReaderListSecure:PC_to_RDR_SetLength()", log: OSLog.libLog, type: .info)
+        #endif
         buffer[1] = (UInt8)(dataLength & 0x0FF)
         buffer[2] = (UInt8)((dataLength >> 8) & 0x0FF)
         buffer[3] = (UInt8)((dataLength >> 16) & 0x0FF)
@@ -216,7 +225,9 @@ internal class SCardReaderListSecure : SClass {
     }
     
     private func getRandom(_ length: Int) -> [UInt8] {
+        #if DEBUG
         os_log("SCardReaderListSecure:getRandom()", log: OSLog.libLog, type: .info)
+        #endif
         var result = [UInt8](repeating: 0x00, count: length)
         if self.debugSecureCommunication {
             for i in 0 ..< length {
@@ -229,7 +240,9 @@ internal class SCardReaderListSecure : SClass {
     }
     
     private func computeCmac(_ key: [UInt8], _ iv: [UInt8]?, _ buffer: [UInt8]) -> [UInt8] {
+        #if DEBUG
         os_log("SCardReaderListSecure:computeCmac()", log: OSLog.libLog, type: .info)
+        #endif
         var cmac = [UInt8]()
         var actual_length = 0
         
@@ -279,7 +292,9 @@ internal class SCardReaderListSecure : SClass {
     }
     
     private func aesCbcEncrypt(_ key: [UInt8], _ IV: [UInt8]?, _ buffer: [UInt8]) -> [UInt8]? {
+        #if DEBUG
         os_log("SCardReaderListSecure:aesCbcEncrypt()", log: OSLog.libLog, type: .info)
+        #endif
         let iv = (IV == nil) ? [UInt8](repeating: 0x00, count: 16) : IV
         do {
             let result = try AES(key: key, blockMode: CBC(iv: iv!), padding: .noPadding).encrypt(buffer)
@@ -291,7 +306,9 @@ internal class SCardReaderListSecure : SClass {
     }
     
     private func aesCbcDecrypt(_ key: [UInt8], _ IV: [UInt8]?, _ buffer: [UInt8]) -> [UInt8]? {
+        #if DEBUG
         os_log("SCardReaderListSecure:aesCbcDecrypt()", log: OSLog.libLog, type: .info)
+        #endif
         let iv = (IV == nil) ? [UInt8](repeating: 0x00, count: 16) : IV
         do {
             let result = try AES(key: key, blockMode: CBC(iv: iv!), padding: .noPadding).decrypt(buffer)
@@ -303,7 +320,9 @@ internal class SCardReaderListSecure : SClass {
     }
     
     private func aesEcbEncrypt(_ key: [UInt8], _ buffer: [UInt8]) -> [UInt8]? {
+        #if DEBUG
         os_log("SCardReaderListSecure:aesEcbEncrypt()", log: OSLog.libLog, type: .info)
+        #endif
         let iv = [UInt8](repeating: 0x00, count: 16)
         do {
             let result = try AES(key: key, blockMode: CBC(iv: iv), padding: .noPadding).encrypt(buffer)
@@ -315,7 +334,9 @@ internal class SCardReaderListSecure : SClass {
     }
     
     private func aesEcbDecrypt(_ key: [UInt8], _ buffer: [UInt8]) -> [UInt8]? {
+        #if DEBUG
         os_log("SCardReaderListSecure:aesEcbDecrypt()", log: OSLog.libLog, type: .info)
+        #endif
         let iv = [UInt8](repeating: 0x00, count: 16)
         do {
             let result = try AES(key: key, blockMode: CBC(iv: iv), padding: .noPadding).decrypt(buffer)
@@ -327,7 +348,9 @@ internal class SCardReaderListSecure : SClass {
     }
     
     internal func cleanupAuthentication() {
+        #if DEBUG
         os_log("SCardReaderListSecure:cleanupAuthentication()", log: OSLog.libLog, type: .info)
+        #endif
         sessionEncKey = []
         sessionMacKey = []
         sessionSendIV = []
@@ -337,10 +360,14 @@ internal class SCardReaderListSecure : SClass {
     }
 
     private func getAuthenticationCommandForAes128(_ keySelect: UInt8, _ keyValue: [UInt8]) -> [UInt8]? {
+        #if DEBUG
         os_log("SCardReaderListSecure:getAuthenticationCommandForAes128()", log: OSLog.libLog, type: .info)
+        #endif
         
         cleanupAuthentication()
+        #if DEBUG
         os_log("Running AES mutual authentication using key %02d", log: OSLog.libLog, type: .debug, keySelect)
+        #endif
         
         /* Generate host nonce */
         self.rndA = self.getRandom(16)
@@ -369,7 +396,9 @@ internal class SCardReaderListSecure : SClass {
     
     // It's up to the caller to verify that the response (code) is valid
     private func aesAuthenticationStep1(responseStep1: [UInt8], keySelect: UInt8, keyValue: [UInt8]) -> [UInt8]? {
+        #if DEBUG
         os_log("SCardReaderListSecure:aesAuthenticationStep1()", log: OSLog.libLog, type: .info)
+        #endif
         
         if self.debugSecureCommunication {
             os_log("   Response from reader:", log: OSLog.libLog, type: .debug)
@@ -441,7 +470,9 @@ internal class SCardReaderListSecure : SClass {
     
     // It's up to the caller to verify that the response (code) is valid
     private func aesAuthenticationStep2(responseStep2 rspStep3: [UInt8], keySelect: UInt8, keyValue: [UInt8]) -> Bool {
+        #if DEBUG
         os_log("SCardReaderListSecure:aesAuthenticationStep2()", log: OSLog.libLog, type: .info)
+        #endif
         
         if self.debugSecureCommunication {
             os_log("   >                    %s", log: OSLog.libLog, type: .debug, rspStep3.hexa)
@@ -475,7 +506,9 @@ internal class SCardReaderListSecure : SClass {
         t = BinUtils.rotateRightOneByte(t)
         
         if (!BinUtils.equals(t, rndA)) {
+            #if DEBUG
             os_log("%s!=%s", log: OSLog.libLog, type: .debug, t.hexa, rndA.hexa)
+            #endif
             setInternalError(code: .authenticationError, message:  "Authentication failed at step 3 (device's cryptogram is invalid)")
             return false
         }

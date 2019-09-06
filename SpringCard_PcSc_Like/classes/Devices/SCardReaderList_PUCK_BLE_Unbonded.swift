@@ -8,8 +8,7 @@ import CoreBluetooth
 import os.log
 
 /// :nodoc:
-public class SCardReaderList_PUCK_BLE_Unbonded: SCardReaderList
-{
+public class SCardReaderList_PUCK_BLE_Unbonded: SCardReaderList {
 	public override func isBoundedDevice() -> Bool {
 		return false
 	}

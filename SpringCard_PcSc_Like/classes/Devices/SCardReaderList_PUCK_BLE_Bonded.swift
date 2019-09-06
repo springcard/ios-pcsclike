@@ -8,8 +8,7 @@ import CoreBluetooth
 import os.log
 
 /// :nodoc:
-public class SCardReaderList_PUCK_BLE_Bonded: SCardReaderList
-{
+public class SCardReaderList_PUCK_BLE_Bonded: SCardReaderList {
 	override func setSpecificDeviceServices() {
 		self.deviceSpecificServices = DevicesServices.getServices(deviceType: .PUCK_Bonded)
 	}

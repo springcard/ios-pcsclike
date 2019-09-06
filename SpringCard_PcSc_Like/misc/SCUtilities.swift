@@ -109,6 +109,5 @@ internal class SCUtilities {
 		let data = Data(bytes)
 		let value = UInt32(bigEndian: data.withUnsafeBytes { $0.pointee })
 		return value
-	}
-	
+	}	
 }

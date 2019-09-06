@@ -74,16 +74,7 @@ public protocol SCardReaderListDelegate {
 	///   - channel: Object of type `SCardChannel` or nil in case of problem
 	///   - error: In case of problem this parameter is not nil and contains an error code and message
 	func onCardDidDisconnect(channel: SCardChannel?, error: Error?)
-    
-    /// Log data sent and received by the library
-    ///
-    /// - Parameters:
-    ///   - characteristicId: Bluetooth characteristic that sent or received data
-    ///   - direction: `<` means data sent by the library to the reader, `>` means data received by the library
-    ///   - data: byte array representing data sent or received
-    /// - Remark: This callback is temporary
-    func onData(characteristicId: String, direction: String, data: [UInt8]?)
-    
+   
     /// Read device’s power state & battery level
     ///
     /// - Parameters:

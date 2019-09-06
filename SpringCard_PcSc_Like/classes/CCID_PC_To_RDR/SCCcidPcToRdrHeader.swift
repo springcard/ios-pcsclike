@@ -23,7 +23,6 @@ internal class SCCcidPcToRdrHeader: SClass {
 	private let headerSize = 10
 
 	init(command: SCard_CCID_PC_To_RDR, slotNumber: Int, sequenceNumber: Int, payloadLength: UInt32, commandParameters: [Byte], readerListSecure: SCardReaderListSecure?) {
-        
 		self.command = command
 		self.slotNumber = slotNumber
 		self.sequenceNumber = sequenceNumber

@@ -46,18 +46,31 @@ public class SCardChannel: Equatable {
 	}
 	
 	internal init(parent: SCardReader, atr: [UInt8]) {
-		os_log("SCardChannel:init()", log: OSLog.libLog, type: .info)
+        #if DEBUG
+		os_log("SCardChannel:init() with ATR", log: OSLog.libLog, type: .info)
+        #endif
 		self._parent = parent
 		self._atr = atr
 	}
+    
+	internal init(parent: SCardReader) {
+	#if DEBUG
+	        os_log("SCardChannel:init() WITHOUT ATR", log: OSLog.libLog, type: .info)
+        #endif
+        self._parent = parent
+    }
 	
 	internal func getSlotIndex() -> Int {
+        #if DEBUG
 		os_log("SCardChannel:getSlotIndex()", log: OSLog.libLog, type: .info)
+        #endif
 		return parent._slotIndex
 	}
 	
 	public static func == (lhs: SCardChannel, rhs: SCardChannel) -> Bool {
+        #if DEBUG
 		os_log("SCardChannel:==", log: OSLog.libLog, type: .info)
+        #endif
 		return lhs._parent == rhs._parent
 	}
 
@@ -68,7 +81,11 @@ public class SCardChannel: Equatable {
 	- Returns: Nothing, answer is available in the `onTransmitDidResponse()` callback
 	*/
 	public func transmit(command: [UInt8]) {
+        #if DEBUG
 		os_log("SCardChannel:transmit()", log: OSLog.libLog, type: .info)
+        os_log("slot Index: %d", log: OSLog.libLog, type: .debug, self.parent._slotIndex)
+        os_log("slot Name: %s", log: OSLog.libLog, type: .debug, self.parent._slotName)
+        #endif
 		_parent._parent.transmit(channel: self, command: command)
 	}
 	
@@ -78,11 +95,13 @@ public class SCardChannel: Equatable {
 	- Returns: Nothing, answer is available in the `onCardDidDisconnect()` callback
 	*/
 	public func cardDisconnect() {
+        #if DEBUG
 		os_log("SCardChannel:cardDisconnect()", log: OSLog.libLog, type: .info)
-        // reinitAtr() is called by parent.parent in case of success
+        #endif
+        _parent.setDeconnected()
 		_parent._parent.cardDisconnect(channel: self)
 	}
-	
+
 	internal func reinitAtr() {
 		self._atr = [UInt8]()
 	}
@@ -98,7 +117,9 @@ public class SCardChannel: Equatable {
 	- Returns: Nothing, answer is available in the `onCardDidConnect()` callback
 	*/
 	public func cardReconnect() {
+        #if DEBUG
 		os_log("SCardChannel:cardReconnect()", log: OSLog.libLog, type: .info)
+        #endif
 		_parent._parent.cardReconnect(channel: self)
 	}
 }

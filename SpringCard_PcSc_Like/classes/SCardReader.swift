@@ -25,7 +25,8 @@ public class SCardReader: Equatable {
 	internal var _slotName: String = ""
 	internal var _cardPowered: Bool = false
 	internal var _cardPresent: Bool = false
-    //internal var _needToBePowered: Bool = false // TODO, utile ?
+    private var _wasDiconnected: Bool = false
+    private var _slotWasInError: Bool = false
     
     /**
      Contains the slot's index
@@ -88,27 +89,40 @@ public class SCardReader: Equatable {
 	}
 	
 	internal func setNewState(state: SCCcidStatusSlotStatusNotification) {
+        #if DEBUG
 		os_log("SCardReader:setNewState()", log: OSLog.libLog, type: .info)
         os_log("Slot Index: %@, new state: %@", log: OSLog.libLog, type: .debug, String(self._slotIndex), String(state.slotStatus.rawValue))
+        #endif
 		switch state.slotStatus {
 			case .cardAbsent: // Card absent, no change since the last notification
+                #if DEBUG
                 os_log("Card absent, no change since the last notification", log: OSLog.libLog, type: .debug)
+                #endif
 				self._cardPresent = false
 				self._cardPowered = false
 			
 			case .cardPresent:	// Card present, no change since last notification
+                #if DEBUG
                 os_log("Card present, no change since last notification", log: OSLog.libLog, type: .debug)
+                #endif
 				self._cardPresent = true
 
 			case .cardRemoved:	// Card removed notification
+                #if DEBUG
                 os_log("Card removed notification", log: OSLog.libLog, type: .debug)
+                #endif
 				self._cardPresent = false
 				self._cardPowered = false
-				//self._channel = nil // TODO supprimer ?
+            	self.setSlotNotInError()
 
 			case .cardInserted:	// Card inserted notification
+                #if DEBUG
                 os_log("Card inserted notification", log: OSLog.libLog, type: .debug)
+                #endif
 				self._cardPresent = true
+                self._cardPowered = false
+                self._wasDiconnected = false
+	            self.setSlotNotInError()
 		}
 	}
 
@@ -119,7 +133,9 @@ public class SCardReader: Equatable {
 	- Returns: Nothing, answer is available in the `onControlDidResponse()` callback
 	*/
 	public func control(command: [UInt8]) {
+        #if DEBUG
 		os_log("SCardReader:control()", log: OSLog.libLog, type: .info)
+        #endif
 		parent?.control(command: command)
 	}
 	
@@ -129,30 +145,54 @@ public class SCardReader: Equatable {
 	- Returns: Nothing, answer is available in the `onCardDidConnect()` callback
 	*/
 	public func cardConnect() {
+        #if DEBUG
 		os_log("SCardReader:cardConnect()", log: OSLog.libLog, type: .info)
 		os_log("Channel: %s", log: OSLog.libLog, type: .debug, self._slotName)
+        #endif
 		parent?.cardConnect(reader: self)
 	}
 	
 	internal func setNewChannel(_ channel: SCardChannel) {
-		os_log("SCardReader:setNewChannel()", log: OSLog.libLog, type: .info)
 		self._channel = channel
 	}
     
     internal func unpower() {
-        os_log("SCardReader:unpower()", log: OSLog.libLog, type: .info)
         if self._channel != nil {
             self._channel?.setUnpowered()
         }
     }
 	
 	internal func setCardPowered() {
-		os_log("SCardReader:setCardPowered()", log: OSLog.libLog, type: .info)
+        self.setSlotNotInError()
 		self._cardPowered = true
 	}
     
     internal func setCardUnpowered() {
-        os_log("SCardReader:setCardUnpowered()", log: OSLog.libLog, type: .info)
         self._cardPowered = false
+    }
+    
+    internal func setDeconnected() {
+        self._wasDiconnected = true
+    }
+    
+    internal func setConnected() {
+        self.setSlotNotInError()
+    	self._wasDiconnected = false
+    }
+
+    internal func wasDisconnected() -> Bool {
+        return self._wasDiconnected
+    }
+    
+    internal func setSlotInError() {
+        self._slotWasInError = true
+    }
+    
+    internal func setSlotNotInError() {
+        self._slotWasInError = false
+    }
+    
+    internal func isSlotInError() -> Bool {
+        return self._slotWasInError
     }
 }

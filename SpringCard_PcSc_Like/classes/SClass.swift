@@ -14,7 +14,6 @@ class SClass {
     internal func setInternalError(code: SCardErrorCode, message: String) {
         self.errorCode = code
         self.errorMessage = message
-        os_log("Error: code: %i, message: %s", log: OSLog.libLog, type: .error, errorCode.rawValue, errorMessage)
     }
 }
 

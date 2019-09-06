@@ -27,6 +27,7 @@ internal class SCCcidRdRToPcHeader: SClass {
 
 	internal var isValid = false
     private var isSecureCommunication = false
+    private var isLongAnswerFromCaller = false
 	
 	// Equivalents of the CCID_RDR_To_PC header ********************
 	internal var responseCode: CCID_RDR_To_PC_Answer_Codes?
@@ -38,8 +39,9 @@ internal class SCCcidRdRToPcHeader: SClass {
 	internal var payloadStartIndex: Int = 0
 	// *************************************************************
 
-	init(characteristic: CBCharacteristic, readerListSecure: SCardReaderListSecure?) {
+    init(characteristic: CBCharacteristic, readerListSecure: SCardReaderListSecure?, isLongAnswer: Bool = false) {
         super.init()
+        self.isLongAnswerFromCaller = isLongAnswer
         self.readerListSecure = readerListSecure
         if readerListSecure != nil && (readerListSecure?.isSecureCommunication)! {
             self.isSecureCommunication = true
@@ -70,7 +72,7 @@ internal class SCCcidRdRToPcHeader: SClass {
 			setInternalError(code: .invalidCharacteristicSetting, message: "Raw content of CCID RDR_To_PC characterisitc is empty or too short")
 			return
 		}
-		if !self.isCommandValid() {
+		if !self.isLongAnswerFromCaller && !self.isCommandValid() {
 			setInternalError(code: .invalidCharacteristicSetting, message: "Command response of CCID RDR_To_PC characterisitc is not valid")
 			return
 		}

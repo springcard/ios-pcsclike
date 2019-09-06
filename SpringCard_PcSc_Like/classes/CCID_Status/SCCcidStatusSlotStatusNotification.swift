@@ -15,7 +15,6 @@ internal struct SCCcidStatusSlotStatusNotification {
 	internal var rawContent: UInt8 = UInt8(0x00)
 	
 	init(slotNumber: Int, bits: UInt8) {
-		//os_log("SCCcidStatusSlotStatusNotification:init()", log: OSLog.libLog, type: .info)
 		self.slotNumber = slotNumber
 		self.rawContent = bits
 		switch bits {

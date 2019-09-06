@@ -98,12 +98,16 @@ internal class BinUtils {
         let lastIndex = (sourceOffset + length)
         
         if destinationOffset < 0 || source.isEmpty || sourceOffset < 0 || sourceOffset >= source.count || length < 0 {
+            #if DEBUG
             os_log("BinUtils:copyTo(), problem with passed parameters", log: OSLog.libLog, type: .error)
+            #endif
             return
         }
         
         if lastIndex > source.count {
+            #if DEBUG
             os_log("BinUtils:copyTo(), sourceOffset + length is out of bounds", log: OSLog.libLog, type: .error)
+            #endif
             return
         }
         
@@ -119,7 +123,9 @@ internal class BinUtils {
         var cpt = 0
         let end = (destinationOffset + length)
         if end < destinationOffset {
+            #if DEBUG
             os_log("BinUtils:copyTo(), end index is lower than start index", log: OSLog.libLog, type: .error)
+            #endif
             return
         }
         for i in destinationOffset ..< end {
