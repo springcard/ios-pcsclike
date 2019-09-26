@@ -11,7 +11,7 @@ internal class BinUtils {
     static func copy(_ array: [UInt8], _ offset: Int = 0, _ length: Int = 0) -> [UInt8] {
         var _offset = offset
         var _length = length
-        var _array = array
+        let _array = array
         
         if _length == 0 {
             if _offset < 0 {
@@ -111,7 +111,7 @@ internal class BinUtils {
             return
         }
         
-        var _source = Array(source[sourceOffset ..< lastIndex])
+        let _source = Array(source[sourceOffset ..< lastIndex])
         let missingBytes = _source.count - (destination.count - destinationOffset)
         
         if missingBytes > 0 {
