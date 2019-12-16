@@ -1315,7 +1315,6 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         self.delegate?.onReaderStatus(reader: reader, present: reader.cardPresent, powered: reader.cardPowered, error: nil)
     }
     
-    // TODO: remove
     private func debugPcToRdrHeader(_ bytes : [UInt8]) {
         #if DEBUG
         if bytes.isEmpty || bytes.count < 10 {
@@ -1350,7 +1349,6 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         #endif
     }
     
-    // TODO: remove
     private func debugRdrToPcHeader(_ bytes : [UInt8]) {
         #if DEBUG
         if bytes.isEmpty || bytes.count < 10 {
