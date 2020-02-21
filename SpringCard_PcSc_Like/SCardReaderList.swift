@@ -997,8 +997,8 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
             } else { // error
                 self._slotStatus = slotStatus ?? 0x00
                 self._slotError = slotError ?? 0x00
-                let slotStatusAsString = (slotStatus != nil) ? String(Int(slotStatus!)) : ""
-                let slotErrorAsString =  (slotError != nil) ? String(Int(slotError!)) : ""
+                let slotStatusAsString = (slotStatus != nil) ? String(format: "%02X", Int(slotStatus!)) : ""
+                let slotErrorAsString =  (slotError != nil) ? String(format: "%02X", Int(slotError!)) : ""
                 callOnCardDidTransmitWithError(generateError(code: .cardCommunicationError, message: "channel.transmit() was called but slot status and/or slot error are not equals to zero. Slot error: " + slotErrorAsString + ", slot status: " + slotStatusAsString, trigger: false))
                 noop()
                 askToPowerOnSlotsWithCard()
@@ -1078,8 +1078,8 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
             } else {
                 self._slotStatus = slotStatus ?? 0x00
                 self._slotError = slotError ?? 0x00
-                let slotStatusAsString = (slotStatus != nil) ? String(Int(slotStatus!)) : "Unknown slot status"
-                let slotErrorAsString =  (slotError != nil) ? String(Int(slotError!)) : "Unknown slot error"
+                let slotStatusAsString = (slotStatus != nil) ? String(format: "%02X", Int(slotStatus!)) : "Unknown slot status"
+                let slotErrorAsString =  (slotError != nil) ? String(format: "%02X", Int(slotError!)) : "Unknown slot error"
                 reader.setSlotInError()
                 self.isUsingSlotNumber = self.slotCount + 1
                 callOnCardDidConnectWithError(generateError(code: .cardCommunicationError, message: "SCardConnect() was called but slot status and/or slot error are not equals to zero. Slot error: " + slotErrorAsString + ", slot status: " + slotStatusAsString, trigger: false))
@@ -1200,9 +1200,9 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
     }
     
     // Manage internal and external state when the reader is weaking up or when it is shutting down
-    private func lawPowerModeChanged() {
+    private func lowPowerModeChanged() {
         #if DEBUG
-        os_log("SCardReaderList:lawPowerModeChanged()", log: OSLog.libLog, type: .info)
+        os_log("SCardReaderList:lowPowerModeChanged()", log: OSLog.libLog, type: .info)
         #endif
         if self.machineState != .discoveredDeviceWithSuccess {
             return
@@ -1242,7 +1242,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         }
         
         if self.ccidStatus.isInLowPowerMode != self.isInLowPowerMode {
-            lawPowerModeChanged()
+            lowPowerModeChanged()
         }
         if self.ccidStatus.isInLowPowerMode {
             return
@@ -1362,10 +1362,12 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
         os_log("%s", log: OSLog.libLog, type: .debug, "Slot number    : " + String(bytes[5]))
         os_log("%s", log: OSLog.libLog, type: .debug, "Sequence number: " + String(bytes[6]))
         if bytes[7] != 0x00 {
-            os_log("%s", log: OSLog.libLog, type: .debug, "Slot status    : " + String(bytes[7]))
+            self._slotStatus = bytes[7]
+            os_log("%s", log: OSLog.libLog, type: .debug, "Slot status    : " + String(format: "%02X", bytes[7]))
         }
         if bytes[8] != 0x00 {
-            os_log("%s", log: OSLog.libLog, type: .debug, "Slot error     : " + String(bytes[8]))
+            self._slotError = bytes[8]
+            os_log("%s", log: OSLog.libLog, type: .debug, "Slot error     : " + String(format: "%02X", bytes[8]))
         }        
         if bytes.count > 10 {
             os_log("%s", log: OSLog.libLog, type: .debug, "Payload        : " + Array(bytes[10...]).hexa)
