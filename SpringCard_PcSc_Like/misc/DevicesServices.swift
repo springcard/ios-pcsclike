@@ -11,7 +11,7 @@ import os.log
 
 /// :nodoc:
 internal enum BleDeviceType {
-	case Unknown, D600, PUCK_Unbonded, PUCK_Bonded
+	case Unknown, D600, ComboProduct, PUCK_Unbonded, PUCK_Bonded
 }
 
 /// :nodoc:
@@ -22,6 +22,8 @@ internal class DevicesServices {
 		switch deviceType {
 		case .D600:
 			deviceServices = DevicesServices.getD600Services()
+		case .ComboProduct:
+			deviceServices = DevicesServices.getComboProductServices()
 		case .PUCK_Bonded:
 			deviceServices = DevicesServices.getPuckBondedServices()
 		case .PUCK_Unbonded:
@@ -48,6 +50,19 @@ internal class DevicesServices {
 						"CCID_RDR_To_PC": "94EDE62E-0808-46F8-91EC-AC0272D67796",
 						"CCID_Status": "7C334BC2-1812-4C7E-A81D-591F92933C37"
 					])]
+	}
+	
+	internal static func getComboProductServices() -> [String: (serviceDescription: String, isAdvertisingService: Bool, serviceCharacteristics: [String: String])] {
+		return  [
+			"F91C914F-367C-4108-AC3E-3D3030373353":	// Service Advertized for S370
+				(
+					serviceDescription: "Main service",
+					isAdvertisingService: true,
+					serviceCharacteristics:	[
+						"CCID_PC_To_RDR": "281EBED4-86C4-4253-84F1-57FB9AB2F72C",
+						"CCID_RDR_To_PC": "811DC7A6-A573-4E15-89CC-7EFACAE04E3C",
+						"CCID_Status": "EAB75CAB-C7DC-4DB9-874C-4AD8EE0F180F"
+			])]
 	}
 	
 	internal static func getPuckUnbondedServices() -> [String: (serviceDescription: String, isAdvertisingService: Bool, serviceCharacteristics: [String: String])] {
