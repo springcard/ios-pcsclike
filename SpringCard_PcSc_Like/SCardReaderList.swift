@@ -675,7 +675,7 @@ public class SCardReaderList: NSObject, CBCentralManagerDelegate, CBPeripheralDe
             #endif
             if self.machineState != .discoveredDeviceWithSuccess { // We are still in the discover process
                 // during device discovery, we save characteristics values and some other things
-                if characteristic.service.uuid.uuidString.lowercased() == batteryLevelUuid.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+                if characteristic.service!.uuid.uuidString.lowercased() == batteryLevelUuid.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
                     self.batteryLevelCharacteristics.append(characteristic)
                 }
                 createObjectProperties(characteristic)
