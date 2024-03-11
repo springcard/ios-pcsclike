@@ -42,6 +42,7 @@
 		11319A55221D86A000C8EFB8 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		113C120622183F900093C914 /* SClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SClass.swift; sourceTree = "<group>"; };
 		113FC7F12211CCE600FF5B6D /* BinUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinUtils.swift; sourceTree = "<group>"; };
+		8919441D2B9EF12D0000D11A /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		BD03266121AD88C600682A30 /* SpringCard_PcSc_Like.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpringCard_PcSc_Like.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD03266421AD88C600682A30 /* SpringCard_PcSc_Like.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpringCard_PcSc_Like.h; sourceTree = "<group>"; };
 		BD03266521AD88C600682A30 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -83,6 +84,7 @@
 		BD03265721AD88C600682A30 = {
 			isa = PBXGroup;
 			children = (
+				8919441D2B9EF12D0000D11A /* Package.swift */,
 				11319A55221D86A000C8EFB8 /* README.md */,
 				BD03266221AD88C600682A30 /* Products */,
 				BD03266321AD88C600682A30 /* SpringCard_PcSc_Like */,
