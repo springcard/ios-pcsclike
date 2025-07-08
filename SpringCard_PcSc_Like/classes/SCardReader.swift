@@ -55,7 +55,7 @@ public class SCardReader: Equatable {
 		return self._parent
 	}
 	
-	internal var channel: SCardChannel? {
+	public var channel: SCardChannel? {
 		return self._channel
 	}
 

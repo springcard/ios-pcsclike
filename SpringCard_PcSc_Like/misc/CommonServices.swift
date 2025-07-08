@@ -70,7 +70,7 @@ internal class CommonServices
 				isAdvertisingService: false,
 				serviceCharacteristics: [
 					"org.bluetooth.characteristic.battery_level"      	: "2A19",
-                    "org.bluetooth.characteristic.battery_power_state"	: "2A1A"
+                    //"org.bluetooth.characteristic.battery_power_state"	: "2A1A"
 				]))
 		return commonServices
 	}
